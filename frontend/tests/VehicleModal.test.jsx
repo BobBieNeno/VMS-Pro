@@ -24,6 +24,7 @@ describe('VehicleModal', () => {
 
     expect(screen.getByText('แก้ไขข้อมูลรถยนต์')).toBeInTheDocument();
     expect(screen.getByLabelText(/หมายเลขทะเบียนรถ/)).toHaveValue('1กก 1234');
+    expect(screen.getByLabelText(/ยี่ห้อรถยนต์/)).toHaveTextContent('Toyota');
     expect(screen.getByLabelText(/รุ่นรถ/)).toHaveValue('Hilux Revo');
   });
 
@@ -44,7 +45,8 @@ describe('VehicleModal', () => {
     render(<VehicleModal isOpen vehicle={null} onClose={() => {}} onSubmit={onSubmit} />);
 
     await user.type(screen.getByLabelText(/หมายเลขทะเบียนรถ/), '1กก 1234');
-    await user.selectOptions(screen.getByLabelText(/ยี่ห้อรถยนต์/), 'Toyota');
+    await user.click(screen.getByLabelText(/ยี่ห้อรถยนต์/));
+    await user.click(screen.getByRole('option', { name: 'Toyota' }));
     await user.type(screen.getByLabelText(/รุ่นรถ/), 'Hilux Revo');
     await user.click(screen.getByRole('button', { name: 'บันทึก' }));
 

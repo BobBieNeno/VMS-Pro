@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import './VehicleModal.css';
 
 const COMMON_BRANDS = ['Toyota', 'Honda', 'Isuzu', 'Nissan', 'Mazda', 'Mitsubishi', 'Ford', 'อื่นๆ'];
@@ -14,6 +14,8 @@ export default function VehicleModal({ isOpen, vehicle, onClose, onSubmit }) {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const [isBrandOpen, setIsBrandOpen] = useState(false);
+  const brandDropdownRef = useRef(null);
 
   const isEditMode = Boolean(vehicle);
 
@@ -31,8 +33,33 @@ export default function VehicleModal({ isOpen, vehicle, onClose, onSubmit }) {
       );
       setErrors({});
       setSubmitError('');
+      setIsBrandOpen(false);
     }
   }, [isOpen, vehicle]);
+
+  useEffect(() => {
+    if (!isBrandOpen) return undefined;
+
+    function handlePointerDown(e) {
+      if (!brandDropdownRef.current?.contains(e.target)) {
+        setIsBrandOpen(false);
+      }
+    }
+
+    function handleKeyDown(e) {
+      if (e.key === 'Escape') {
+        setIsBrandOpen(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('mousedown', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isBrandOpen]);
 
   if (!isOpen) return null;
 
@@ -41,6 +68,11 @@ export default function VehicleModal({ isOpen, vehicle, onClose, onSubmit }) {
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: undefined }));
     }
+  }
+
+  function handleBrandSelect(brand) {
+    handleChange('brand', brand);
+    setIsBrandOpen(false);
   }
 
   function validate() {
@@ -86,7 +118,7 @@ export default function VehicleModal({ isOpen, vehicle, onClose, onSubmit }) {
             {isEditMode ? 'แก้ไขข้อมูลรถยนต์' : 'เพิ่มรถยนต์ใหม่'}
           </h2>
           <button type="button" className="modal__close" onClick={onClose} aria-label="ปิด">
-            ✕
+            ×
           </button>
         </div>
 
@@ -111,22 +143,54 @@ export default function VehicleModal({ isOpen, vehicle, onClose, onSubmit }) {
             </div>
 
             <div className="form-field">
-              <label htmlFor="brand">
-                ยี่ห้อรถยนต์ <span className="form-field__required">*</span>
-              </label>
-              <select
-                id="brand"
-                value={form.brand}
-                onChange={(e) => handleChange('brand', e.target.value)}
-                className={errors.brand ? 'has-error' : ''}
-              >
-                <option value="">เลือกยี่ห้อ</option>
-                {COMMON_BRANDS.map((brand) => (
-                  <option key={brand} value={brand}>
-                    {brand}
-                  </option>
-                ))}
-              </select>
+              <label htmlFor="brand">ยี่ห้อรถยนต์ <span className="form-field__required">*</span></label>
+              <div className="brand-select" ref={brandDropdownRef}>
+                <button
+                  id="brand"
+                  type="button"
+                  className={[
+                    'brand-select__trigger',
+                    !form.brand ? 'is-placeholder' : '',
+                    isBrandOpen ? 'is-open' : '',
+                    errors.brand ? 'has-error' : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' ')}
+                  aria-haspopup="listbox"
+                  aria-expanded={isBrandOpen}
+                  aria-controls="brand-options"
+                  onClick={() => setIsBrandOpen((prev) => !prev)}
+                >
+                  <span>{form.brand || 'เลือกยี่ห้อ'}</span>
+                  <span className="brand-select__chevron" aria-hidden="true" />
+                </button>
+
+                {isBrandOpen && (
+                  <div id="brand-options" className="brand-select__menu" role="listbox">
+                    {COMMON_BRANDS.map((brand) => {
+                      const isSelected = form.brand === brand;
+
+                      return (
+                        <button
+                          key={brand}
+                          type="button"
+                          className={`brand-select__option${isSelected ? ' is-selected' : ''}`}
+                          role="option"
+                          aria-selected={isSelected}
+                          onClick={() => handleBrandSelect(brand)}
+                        >
+                          <span>{brand}</span>
+                          {isSelected && (
+                            <span className="brand-select__check" aria-hidden="true">
+                              ✓
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
               {errors.brand && <p className="form-field__error">{errors.brand}</p>}
             </div>
 
