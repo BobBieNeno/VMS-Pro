@@ -64,7 +64,6 @@ export default function VehicleListPage() {
       await removeVehicle(deletingVehicle.id);
       showToast('danger', 'ลบข้อมูลสำเร็จ');
       setDeletingVehicle(null);
-      // If we deleted the last item on a page beyond page 1, step back a page
       setCurrentPage((prev) => Math.min(prev, Math.max(1, Math.ceil((vehicles.length - 1) / PAGE_SIZE))));
     } catch (err) {
       showToast('error', err.message || 'ลบข้อมูลไม่สำเร็จ');
@@ -81,9 +80,29 @@ export default function VehicleListPage() {
         <main className="page">
           <div className="page__header">
             <div>
+              <p className="page__eyebrow">Fleet overview</p>
               <h1 className="page__title">รถยนต์ทั้งหมด {vehicles.length} คัน</h1>
               <p className="page__subtitle">จัดการและติดตามสถานะยานพาหนะในระบบ</p>
             </div>
+            <button type="button" className="page__mobile-add" onClick={openAddModal}>
+              <span aria-hidden="true">+</span> เพิ่มรถยนต์
+            </button>
+          </div>
+
+          <div className="page__mobile-search">
+            <label className="page__mobile-search-box">
+              <span aria-hidden="true">⌕</span>
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="ค้นหาทะเบียน, รุ่น, หรือยี่ห้อ..."
+                aria-label="ค้นหารถยนต์"
+              />
+            </label>
+            <button type="button" className="page__filter-btn" aria-label="ตัวกรอง">
+              ≡
+            </button>
           </div>
 
           {error && (

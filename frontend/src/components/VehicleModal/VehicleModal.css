@@ -328,3 +328,78 @@
 .btn--danger:hover:not(:disabled) {
   background: var(--color-danger-hover);
 }
+
+@media (max-width: 900px) {
+  .modal-overlay {
+    align-items: stretch;
+    padding: 0;
+    background: var(--color-surface);
+  }
+
+  .modal {
+    max-width: none;
+    width: 100%;
+    min-height: 100vh;
+    max-height: none;
+    border-radius: 0;
+    box-shadow: none;
+    animation: none;
+  }
+
+  .modal__header {
+    height: 52px;
+    justify-content: center;
+    padding: 0 var(--space-4);
+    position: sticky;
+    top: 0;
+    background: var(--color-surface);
+    z-index: 2;
+  }
+
+  .modal__title {
+    font-size: 14px;
+  }
+
+  .modal__close {
+    position: absolute;
+    left: var(--space-3);
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  .modal__body {
+    padding: var(--space-4);
+    gap: var(--space-4);
+  }
+
+  .form-field label {
+    font-size: 11px;
+  }
+
+  .form-field input,
+  .form-field textarea,
+  .brand-select__trigger {
+    min-height: 38px;
+    font-size: 12px;
+  }
+
+  .form-field textarea {
+    min-height: 92px;
+  }
+
+  .modal__footer {
+    position: sticky;
+    bottom: 0;
+    display: grid;
+    grid-template-columns: 1fr 1.3fr;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4) calc(var(--space-3) + env(safe-area-inset-bottom));
+    background: var(--color-surface);
+  }
+
+  .modal__footer .btn {
+    min-height: 38px;
+    padding: 0 var(--space-3);
+    font-size: 12px;
+  }
+}

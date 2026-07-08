@@ -3,9 +3,15 @@ import './Navbar.css';
 export default function Navbar({ search, onSearchChange, onAddClick }) {
   return (
     <header className="navbar">
+      <div className="navbar__mobile-profile" aria-hidden="true">
+        <span>👤</span>
+      </div>
+
+      <div className="navbar__mobile-title">VMS Pro</div>
+
       <div className="navbar__search">
         <span className="navbar__search-icon" aria-hidden="true">
-          🔍
+          ⌕
         </span>
         <input
           type="text"
@@ -24,6 +30,10 @@ export default function Navbar({ search, onSearchChange, onAddClick }) {
 
       <button type="button" className="navbar__add-btn" onClick={onAddClick}>
         <span aria-hidden="true">+</span> เพิ่มรถยนต์ใหม่
+      </button>
+
+      <button type="button" className="navbar__mobile-bell" aria-label="การแจ้งเตือน">
+        ♡
       </button>
     </header>
   );

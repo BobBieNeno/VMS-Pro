@@ -5,7 +5,7 @@ export default function EmptyState({ hasSearch, onAddClick, onClearSearch }) {
     return (
       <div className="empty-state">
         <div className="empty-state__icon" aria-hidden="true">
-          🔍
+          ⌕
         </div>
         <h3 className="empty-state__title">ไม่พบข้อมูลที่ค้นหา</h3>
         <p className="empty-state__subtitle">ลองค้นหาด้วยคำอื่น หรือล้างคำค้นหา</p>
@@ -19,7 +19,7 @@ export default function EmptyState({ hasSearch, onAddClick, onClearSearch }) {
   return (
     <div className="empty-state">
       <div className="empty-state__icon" aria-hidden="true">
-        🚗
+        🚙
       </div>
       <h3 className="empty-state__title">ยังไม่มีข้อมูลรถยนต์</h3>
       <p className="empty-state__subtitle">เริ่มเพิ่มรถยนต์คันแรกของคุณได้เลย</p>

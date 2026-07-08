@@ -102,6 +102,59 @@
 
 @media (max-width: 900px) {
   .sidebar {
+    position: fixed;
+    left: var(--space-3);
+    right: var(--space-3);
+    bottom: calc(var(--space-2) + env(safe-area-inset-bottom));
+    top: auto;
+    z-index: 80;
+    width: auto;
+    height: 52px;
+    padding: 4px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .sidebar__brand,
+  .sidebar__new-entry,
+  .sidebar__footer {
     display: none;
+  }
+
+  .sidebar__nav {
+    height: 100%;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+    flex: none;
+  }
+
+  .sidebar__nav-item {
+    min-width: 0;
+    justify-content: center;
+    flex-direction: column;
+    gap: 2px;
+    border-radius: var(--radius-sm);
+    padding: 4px;
+    font-size: 9px;
+    line-height: 1.1;
+  }
+
+  .sidebar__nav-item--active {
+    background: var(--color-primary);
+    color: var(--color-text-inverse);
+  }
+
+  .sidebar__nav-icon {
+    font-size: 14px;
+    line-height: 1;
+  }
+
+  .sidebar__nav-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }
