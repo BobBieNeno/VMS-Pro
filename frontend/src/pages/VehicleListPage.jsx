@@ -1,20 +1,28 @@
-import { useMemo, useState } from 'react';
-import Sidebar from '../components/Sidebar/Sidebar';
-import Navbar from '../components/Navbar/Navbar';
-import VehicleTable from '../components/VehicleTable/VehicleTable';
-import VehicleModal from '../components/VehicleModal/VehicleModal';
-import DeleteConfirmDialog from '../components/DeleteConfirmDialog/DeleteConfirmDialog';
-import EmptyState from '../components/EmptyState/EmptyState';
-import Pagination from '../components/Pagination/Pagination';
-import Toast from '../components/Toast/Toast';
-import { useVehicles } from '../hooks/useVehicles';
-import './VehicleListPage.css';
+import { useMemo, useState } from "react";
+import Sidebar from "../components/Sidebar/Sidebar";
+import Navbar from "../components/Navbar/Navbar";
+import VehicleTable from "../components/VehicleTable/VehicleTable";
+import VehicleModal from "../components/VehicleModal/VehicleModal";
+import DeleteConfirmDialog from "../components/DeleteConfirmDialog/DeleteConfirmDialog";
+import EmptyState from "../components/EmptyState/EmptyState";
+import Pagination from "../components/Pagination/Pagination";
+import Toast from "../components/Toast/Toast";
+import { useVehicles } from "../hooks/useVehicles";
+import "./VehicleListPage.css";
 
 const PAGE_SIZE = 10;
 
 export default function VehicleListPage() {
-  const { vehicles, isLoading, error, search, setSearch, addVehicle, editVehicle, removeVehicle } =
-    useVehicles();
+  const {
+    vehicles,
+    isLoading,
+    error,
+    search,
+    setSearch,
+    addVehicle,
+    editVehicle,
+    removeVehicle,
+  } = useVehicles();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingVehicle, setEditingVehicle] = useState(null);
@@ -50,10 +58,10 @@ export default function VehicleListPage() {
   async function handleSubmit(formValues) {
     if (editingVehicle) {
       await editVehicle(editingVehicle.id, formValues);
-      showToast('success', 'บันทึกข้อมูลสำเร็จ');
+      showToast("success", "บันทึกข้อมูลสำเร็จ");
     } else {
       await addVehicle(formValues);
-      showToast('success', 'เพิ่มข้อมูลรถยนต์สำเร็จ');
+      showToast("success", "เพิ่มข้อมูลรถยนต์สำเร็จ");
       setCurrentPage(1);
     }
     closeModal();
@@ -62,11 +70,16 @@ export default function VehicleListPage() {
   async function handleConfirmDelete() {
     try {
       await removeVehicle(deletingVehicle.id);
-      showToast('danger', 'ลบข้อมูลสำเร็จ');
+      showToast("danger", "ลบข้อมูลสำเร็จ");
       setDeletingVehicle(null);
-      setCurrentPage((prev) => Math.min(prev, Math.max(1, Math.ceil((vehicles.length - 1) / PAGE_SIZE))));
+      setCurrentPage((prev) =>
+        Math.min(
+          prev,
+          Math.max(1, Math.ceil((vehicles.length - 1) / PAGE_SIZE)),
+        ),
+      );
     } catch (err) {
-      showToast('error', err.message || 'ลบข้อมูลไม่สำเร็จ');
+      showToast("error", err.message || "ลบข้อมูลไม่สำเร็จ");
     }
   }
 
@@ -75,16 +88,28 @@ export default function VehicleListPage() {
       <Sidebar />
 
       <div className="app-content">
-        <Navbar search={search} onSearchChange={setSearch} onAddClick={openAddModal} />
+        <Navbar
+          search={search}
+          onSearchChange={setSearch}
+          onAddClick={openAddModal}
+        />
 
         <main className="page">
           <div className="page__header">
             <div>
               <p className="page__eyebrow">Fleet overview</p>
-              <h1 className="page__title">รถยนต์ทั้งหมด {vehicles.length} คัน</h1>
-              <p className="page__subtitle">จัดการและติดตามสถานะยานพาหนะในระบบ</p>
+              <h1 className="page__title">
+                รถยนต์ทั้งหมด {vehicles.length} คัน
+              </h1>
+              <p className="page__subtitle">
+                จัดการและติดตามสถานะยานพาหนะในระบบ
+              </p>
             </div>
-            <button type="button" className="page__mobile-add" onClick={openAddModal}>
+            <button
+              type="button"
+              className="page__mobile-add"
+              onClick={openAddModal}
+            >
               <span aria-hidden="true">+</span> เพิ่มรถยนต์
             </button>
           </div>
@@ -100,7 +125,11 @@ export default function VehicleListPage() {
                 aria-label="ค้นหารถยนต์"
               />
             </label>
-            <button type="button" className="page__filter-btn" aria-label="ตัวกรอง">
+            <button
+              type="button"
+              className="page__filter-btn"
+              aria-label="ตัวกรอง"
+            >
               ≡
             </button>
           </div>
@@ -116,7 +145,7 @@ export default function VehicleListPage() {
               <EmptyState
                 hasSearch={Boolean(search)}
                 onAddClick={openAddModal}
-                onClearSearch={() => setSearch('')}
+                onClearSearch={() => setSearch("")}
               />
             ) : (
               <>
