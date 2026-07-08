@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
-import * as vehicleApi from '../api/vehicleApi';
+import { useCallback, useEffect, useState } from "react";
+import * as vehicleApi from "../api/vehicleApi";
 
 /**
  * Encapsulates all vehicle list state (data, loading, error, search)
@@ -9,9 +9,9 @@ export function useVehicles() {
   const [vehicles, setVehicles] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
 
-  const fetchVehicles = useCallback(async (searchTerm = '') => {
+  const fetchVehicles = useCallback(async (searchTerm = "") => {
     setIsLoading(true);
     setError(null);
     try {
