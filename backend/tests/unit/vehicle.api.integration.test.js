@@ -1,41 +1,93 @@
-const fs = require('fs');
-const path = require('path');
 const request = require('supertest');
 
-// Use an isolated db file for integration tests so we never touch
-// real dev data and each test run starts from a clean slate.
-const TEST_DB_FILE = path.join(__dirname, '__test_db__.json');
+jest.mock('../../src/config/prisma', () => {
+  let vehicles = [];
+  let sequence = 1;
 
-jest.mock('../../src/config/db', () => {
-  const fsLib = require('fs');
-  const filePath = require('path').join(__dirname, '__test_db__.json');
-
-  function ensure() {
-    if (!fsLib.existsSync(filePath)) {
-      fsLib.writeFileSync(filePath, JSON.stringify({ vehicles: [] }, null, 2));
-    }
+  function clone(vehicle) {
+    return vehicle ? { ...vehicle } : null;
   }
-  return {
-    readDb: () => {
-      ensure();
-      return JSON.parse(fsLib.readFileSync(filePath, 'utf-8'));
+
+  function matchesField(value, filter) {
+    if (filter.equals !== undefined) {
+      return value.toLowerCase() === filter.equals.toLowerCase();
+    }
+    if (filter.contains !== undefined) {
+      return value.toLowerCase().includes(filter.contains.toLowerCase());
+    }
+    return false;
+  }
+
+  const vehicle = {
+    __reset: () => {
+      vehicles = [];
+      sequence = 1;
     },
-    writeDb: (data) => {
-      ensure();
-      fsLib.writeFileSync(filePath, JSON.stringify(data, null, 2));
-    },
-    DB_FILE: filePath,
+    findMany: jest.fn(async (args = {}) => {
+      const where = args.where;
+      let result = [...vehicles];
+      if (where && where.OR) {
+        result = result.filter((item) =>
+          where.OR.some((condition) => {
+            const [field, filter] = Object.entries(condition)[0];
+            return matchesField(item[field], filter);
+          })
+        );
+      }
+      result.sort((a, b) => b.createdAt - a.createdAt);
+      return result.map(clone);
+    }),
+    findUnique: jest.fn(async ({ where }) => clone(vehicles.find((item) => item.id === where.id))),
+    findFirst: jest.fn(async ({ where }) => {
+      const excludeId = where.NOT && where.NOT.id;
+      return clone(
+        vehicles.find(
+          (item) =>
+            item.licensePlate.toLowerCase() === where.licensePlate.equals.toLowerCase() &&
+            item.id !== excludeId
+        )
+      );
+    }),
+    create: jest.fn(async ({ data }) => {
+      const now = new Date();
+      const created = {
+        id: `vehicle-${sequence++}`,
+        ...data,
+        createdAt: now,
+        updatedAt: now,
+      };
+      vehicles.push(created);
+      return clone(created);
+    }),
+    update: jest.fn(async ({ where, data }) => {
+      const index = vehicles.findIndex((item) => item.id === where.id);
+      if (index === -1) throw new Error('Record not found');
+
+      vehicles[index] = {
+        ...vehicles[index],
+        ...data,
+        updatedAt: new Date(),
+      };
+      return clone(vehicles[index]);
+    }),
+    delete: jest.fn(async ({ where }) => {
+      const index = vehicles.findIndex((item) => item.id === where.id);
+      if (index === -1) throw new Error('Record not found');
+
+      const [deleted] = vehicles.splice(index, 1);
+      return clone(deleted);
+    }),
   };
+
+  return { vehicle };
 });
 
+const prisma = require('../../src/config/prisma');
 const app = require('../../src/app');
 
 beforeEach(() => {
-  fs.writeFileSync(TEST_DB_FILE, JSON.stringify({ vehicles: [] }, null, 2));
-});
-
-afterAll(() => {
-  if (fs.existsSync(TEST_DB_FILE)) fs.unlinkSync(TEST_DB_FILE);
+  prisma.vehicle.__reset();
+  jest.clearAllMocks();
 });
 
 describe('Vehicle API (integration)', () => {
@@ -94,9 +146,7 @@ describe('Vehicle API (integration)', () => {
   });
 
   it('PUT /api/vehicles/:id returns 404 for a non-existent id', async () => {
-    const res = await request(app)
-      .put('/api/vehicles/does-not-exist')
-      .send({ note: 'x' });
+    const res = await request(app).put('/api/vehicles/does-not-exist').send({ note: 'x' });
 
     expect(res.status).toBe(404);
   });

@@ -8,10 +8,10 @@ const { sendSuccess } = require('../utils/response');
  * with them uniformly.
  */
 
-function getAllVehicles(req, res, next) {
+async function getAllVehicles(req, res, next) {
   try {
     const { search } = req.query;
-    const vehicles = vehicleService.getAllVehicles({ search });
+    const vehicles = await vehicleService.getAllVehicles({ search });
     return sendSuccess(res, {
       data: vehicles,
       message: 'ดึงข้อมูลรถยนต์สำเร็จ',
@@ -22,18 +22,18 @@ function getAllVehicles(req, res, next) {
   }
 }
 
-function getVehicleById(req, res, next) {
+async function getVehicleById(req, res, next) {
   try {
-    const vehicle = vehicleService.getVehicleById(req.params.id);
+    const vehicle = await vehicleService.getVehicleById(req.params.id);
     return sendSuccess(res, { data: vehicle, message: 'ดึงข้อมูลรถยนต์สำเร็จ' });
   } catch (err) {
     return next(err);
   }
 }
 
-function createVehicle(req, res, next) {
+async function createVehicle(req, res, next) {
   try {
-    const vehicle = vehicleService.createVehicle(req.body);
+    const vehicle = await vehicleService.createVehicle(req.body);
     return sendSuccess(res, {
       statusCode: 201,
       data: vehicle,
@@ -44,18 +44,18 @@ function createVehicle(req, res, next) {
   }
 }
 
-function updateVehicle(req, res, next) {
+async function updateVehicle(req, res, next) {
   try {
-    const vehicle = vehicleService.updateVehicle(req.params.id, req.body);
+    const vehicle = await vehicleService.updateVehicle(req.params.id, req.body);
     return sendSuccess(res, { data: vehicle, message: 'บันทึกข้อมูลสำเร็จ' });
   } catch (err) {
     return next(err);
   }
 }
 
-function deleteVehicle(req, res, next) {
+async function deleteVehicle(req, res, next) {
   try {
-    vehicleService.deleteVehicle(req.params.id);
+    await vehicleService.deleteVehicle(req.params.id);
     return sendSuccess(res, { data: null, message: 'ลบข้อมูลสำเร็จ' });
   } catch (err) {
     return next(err);

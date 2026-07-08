@@ -4,48 +4,37 @@ const ApiError = require('../utils/ApiError');
 /**
  * Service layer: business rules live here.
  * Controllers stay thin (parse request -> call service -> send response);
- * repositories stay dumb (pure data access). This is what makes each
- * layer independently unit-testable.
+ * repositories stay dumb (pure data access).
  */
 
-function getAllVehicles({ search = '' } = {}) {
-  const vehicles = vehicleRepository.findAll();
-
-  if (!search) return vehicles;
-
-  const term = search.trim().toLowerCase();
-  return vehicles.filter(
-    (v) =>
-      v.licensePlate.toLowerCase().includes(term) ||
-      v.brand.toLowerCase().includes(term) ||
-      v.model.toLowerCase().includes(term)
-  );
+async function getAllVehicles({ search = '' } = {}) {
+  return vehicleRepository.findAll({ search });
 }
 
-function getVehicleById(id) {
-  const vehicle = vehicleRepository.findById(id);
+async function getVehicleById(id) {
+  const vehicle = await vehicleRepository.findById(id);
   if (!vehicle) {
     throw ApiError.notFound('ไม่พบข้อมูลรถยนต์คันนี้');
   }
   return vehicle;
 }
 
-function createVehicle(payload) {
-  const duplicate = vehicleRepository.findByLicensePlate(payload.licensePlate);
+async function createVehicle(payload) {
+  const duplicate = await vehicleRepository.findByLicensePlate(payload.licensePlate);
   if (duplicate) {
     throw ApiError.conflict('หมายเลขทะเบียนนี้มีอยู่ในระบบแล้ว');
   }
   return vehicleRepository.create(payload);
 }
 
-function updateVehicle(id, payload) {
-  const existing = vehicleRepository.findById(id);
+async function updateVehicle(id, payload) {
+  const existing = await vehicleRepository.findById(id);
   if (!existing) {
     throw ApiError.notFound('ไม่พบข้อมูลรถยนต์คันนี้');
   }
 
   if (payload.licensePlate) {
-    const duplicate = vehicleRepository.findByLicensePlate(payload.licensePlate, id);
+    const duplicate = await vehicleRepository.findByLicensePlate(payload.licensePlate, id);
     if (duplicate) {
       throw ApiError.conflict('หมายเลขทะเบียนนี้มีอยู่ในระบบแล้ว');
     }
@@ -54,12 +43,13 @@ function updateVehicle(id, payload) {
   return vehicleRepository.update(id, payload);
 }
 
-function deleteVehicle(id) {
-  const existing = vehicleRepository.findById(id);
+async function deleteVehicle(id) {
+  const existing = await vehicleRepository.findById(id);
   if (!existing) {
     throw ApiError.notFound('ไม่พบข้อมูลรถยนต์คันนี้');
   }
-  vehicleRepository.remove(id);
+
+  await vehicleRepository.remove(id);
   return existing;
 }
 

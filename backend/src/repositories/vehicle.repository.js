@@ -1,76 +1,80 @@
-const { v4: uuidv4 } = require('uuid');
-const { readDb, writeDb } = require('../config/db');
+const prisma = require('../config/prisma');
 
 /**
  * Repository layer: the ONLY place that touches the data store.
- * Services never read/write the db file directly - this keeps
- * storage swappable (e.g. moving to PostgreSQL later only requires
- * rewriting this file, nothing above it).
+ * Services never talk to Prisma directly, so storage concerns stay here.
  */
 
-function findAll() {
-  const db = readDb();
-  return db.vehicles;
-}
+function normalizeVehicle(vehicle) {
+  if (!vehicle) return null;
 
-function findById(id) {
-  const db = readDb();
-  return db.vehicles.find((v) => v.id === id) || null;
-}
-
-function findByLicensePlate(licensePlate, excludeId = null) {
-  const db = readDb();
-  return db.vehicles.find(
-    (v) =>
-      v.licensePlate.trim().toLowerCase() === licensePlate.trim().toLowerCase() &&
-      v.id !== excludeId
-  ) || null;
-}
-
-function create(vehicleData) {
-  const db = readDb();
-  const now = new Date().toISOString();
-  const newVehicle = {
-    id: uuidv4(),
-    licensePlate: vehicleData.licensePlate.trim(),
-    brand: vehicleData.brand.trim(),
-    model: vehicleData.model.trim(),
-    note: vehicleData.note ? vehicleData.note.trim() : '',
-    createdAt: now,
-    updatedAt: now,
+  return {
+    ...vehicle,
+    createdAt: vehicle.createdAt instanceof Date ? vehicle.createdAt.toISOString() : vehicle.createdAt,
+    updatedAt: vehicle.updatedAt instanceof Date ? vehicle.updatedAt.toISOString() : vehicle.updatedAt,
   };
-  db.vehicles.push(newVehicle);
-  writeDb(db);
-  return newVehicle;
 }
 
-function update(id, updates) {
-  const db = readDb();
-  const index = db.vehicles.findIndex((v) => v.id === id);
-  if (index === -1) return null;
+async function findAll({ search = '' } = {}) {
+  const term = search.trim();
+  const vehicles = await prisma.vehicle.findMany({
+    where: term
+      ? {
+          OR: [
+            { licensePlate: { contains: term, mode: 'insensitive' } },
+            { brand: { contains: term, mode: 'insensitive' } },
+            { model: { contains: term, mode: 'insensitive' } },
+          ],
+        }
+      : undefined,
+    orderBy: { createdAt: 'desc' },
+  });
 
-  const existing = db.vehicles[index];
-  const updated = {
-    ...existing,
-    ...(updates.licensePlate !== undefined && { licensePlate: updates.licensePlate.trim() }),
-    ...(updates.brand !== undefined && { brand: updates.brand.trim() }),
-    ...(updates.model !== undefined && { model: updates.model.trim() }),
-    ...(updates.note !== undefined && { note: updates.note.trim() }),
-    updatedAt: new Date().toISOString(),
-  };
-
-  db.vehicles[index] = updated;
-  writeDb(db);
-  return updated;
+  return vehicles.map(normalizeVehicle);
 }
 
-function remove(id) {
-  const db = readDb();
-  const index = db.vehicles.findIndex((v) => v.id === id);
-  if (index === -1) return false;
+async function findById(id) {
+  const vehicle = await prisma.vehicle.findUnique({ where: { id } });
+  return normalizeVehicle(vehicle);
+}
 
-  db.vehicles.splice(index, 1);
-  writeDb(db);
+async function findByLicensePlate(licensePlate, excludeId = null) {
+  const vehicle = await prisma.vehicle.findFirst({
+    where: {
+      licensePlate: { equals: licensePlate.trim(), mode: 'insensitive' },
+      ...(excludeId ? { NOT: { id: excludeId } } : {}),
+    },
+  });
+
+  return normalizeVehicle(vehicle);
+}
+
+async function create(vehicleData) {
+  const vehicle = await prisma.vehicle.create({
+    data: {
+      licensePlate: vehicleData.licensePlate.trim(),
+      brand: vehicleData.brand.trim(),
+      model: vehicleData.model.trim(),
+      note: vehicleData.note ? vehicleData.note.trim() : '',
+    },
+  });
+
+  return normalizeVehicle(vehicle);
+}
+
+async function update(id, updates) {
+  const data = {};
+  if (updates.licensePlate !== undefined) data.licensePlate = updates.licensePlate.trim();
+  if (updates.brand !== undefined) data.brand = updates.brand.trim();
+  if (updates.model !== undefined) data.model = updates.model.trim();
+  if (updates.note !== undefined) data.note = updates.note ? updates.note.trim() : '';
+
+  const vehicle = await prisma.vehicle.update({ where: { id }, data });
+  return normalizeVehicle(vehicle);
+}
+
+async function remove(id) {
+  await prisma.vehicle.delete({ where: { id } });
   return true;
 }
 

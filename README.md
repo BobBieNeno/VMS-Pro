@@ -37,12 +37,11 @@ backend/src/
 ├── validators/         → payload shape validation (ก่อนเข้าสู่ controller)
 ├── middlewares/        → validateRequest, errorHandler (centralized)
 ├── utils/               → ApiError, response formatter
-└── config/db.js         → JSON-file storage (เปลี่ยนเป็น PostgreSQL ได้โดยแก้ไฟล์นี้ไฟล์เดียว)
+└── config/prisma.js     → Prisma Client + Neon PostgreSQL adapter
 ```
 
-หมายเหตุ: ใช้ JSON-file storage (`src/data/db.json`) แทน PostgreSQL/MySQL เพื่อให้รันได้ทันทีโดยไม่ต้อง
-ติดตั้งฐานข้อมูลแยก ทุก query อยู่ใน `vehicle.repository.js` ไฟล์เดียว — ถ้าต้องเปลี่ยนไปใช้ PostgreSQL จริง
-ในอนาคต แก้แค่ `config/db.js` + `vehicle.repository.js` โดยไม่ต้องแตะ service/controller/route เลย
+หมายเหตุ: ตอนนี้ backend ใช้ Prisma เชื่อม Neon PostgreSQL ผ่าน `DATABASE_URL` แล้ว ทุก query อยู่ใน
+`vehicle.repository.js` ไฟล์เดียว โดย service/controller/route ไม่แตะฐานข้อมูลโดยตรง
 
 ### Setup
 
@@ -50,6 +49,8 @@ backend/src/
 cd backend
 npm install
 cp .env.example .env
+npm run prisma:generate
+npm run db:push    # run after setting DATABASE_URL to your Neon PostgreSQL connection string
 npm run dev        # http://localhost:4000 (nodemon, auto-reload)
 ```
 
@@ -78,7 +79,7 @@ npm test              # รัน unit + integration tests พร้อม cover
 - **Unit tests** — `vehicle.validator.test.js`, `vehicle.service.test.js` (mock repository layer)
 - **Integration tests** — `vehicle.api.integration.test.js` (supertest, ยิง HTTP request จริงผ่าน Express app ทั้งตัว)
 
-ผลลัพธ์ปัจจุบัน: **28 tests ผ่านทั้งหมด, coverage ~92%**
+ผลลัพธ์ปัจจุบัน: **27 tests ผ่านทั้งหมด, coverage ~92%**
 
 ---
 
