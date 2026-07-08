@@ -62,7 +62,7 @@ export default function VehicleListPage() {
   async function handleConfirmDelete() {
     try {
       await removeVehicle(deletingVehicle.id);
-      showToast('success', 'ลบข้อมูลสำเร็จ');
+      showToast('danger', 'ลบข้อมูลสำเร็จ');
       setDeletingVehicle(null);
       // If we deleted the last item on a page beyond page 1, step back a page
       setCurrentPage((prev) => Math.min(prev, Math.max(1, Math.ceil((vehicles.length - 1) / PAGE_SIZE))));

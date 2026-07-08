@@ -1,9 +1,18 @@
-import { useEffect, useRef, useState } from 'react';
-import './VehicleModal.css';
+import { useEffect, useRef, useState } from "react";
+import "./VehicleModal.css";
 
-const COMMON_BRANDS = ['Toyota', 'Honda', 'Isuzu', 'Nissan', 'Mazda', 'Mitsubishi', 'Ford', 'อื่นๆ'];
+const COMMON_BRANDS = [
+  "Toyota",
+  "Honda",
+  "Isuzu",
+  "Nissan",
+  "Mazda",
+  "Mitsubishi",
+  "Ford",
+  "อื่นๆ",
+];
 
-const EMPTY_FORM = { licensePlate: '', brand: '', model: '', note: '' };
+const EMPTY_FORM = { licensePlate: "", brand: "", model: "", note: "" };
 
 /**
  * Shared Add / Edit modal. `vehicle` prop being null means "add mode";
@@ -13,7 +22,7 @@ export default function VehicleModal({ isOpen, vehicle, onClose, onSubmit }) {
   const [form, setForm] = useState(EMPTY_FORM);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState('');
+  const [submitError, setSubmitError] = useState("");
   const [isBrandOpen, setIsBrandOpen] = useState(false);
   const brandDropdownRef = useRef(null);
 
@@ -27,12 +36,12 @@ export default function VehicleModal({ isOpen, vehicle, onClose, onSubmit }) {
               licensePlate: vehicle.licensePlate,
               brand: vehicle.brand,
               model: vehicle.model,
-              note: vehicle.note || '',
+              note: vehicle.note || "",
             }
-          : EMPTY_FORM
+          : EMPTY_FORM,
       );
       setErrors({});
-      setSubmitError('');
+      setSubmitError("");
       setIsBrandOpen(false);
     }
   }, [isOpen, vehicle]);
@@ -47,17 +56,17 @@ export default function VehicleModal({ isOpen, vehicle, onClose, onSubmit }) {
     }
 
     function handleKeyDown(e) {
-      if (e.key === 'Escape') {
+      if (e.key === "Escape") {
         setIsBrandOpen(false);
       }
     }
 
-    document.addEventListener('mousedown', handlePointerDown);
-    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      document.removeEventListener('mousedown', handlePointerDown);
-      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
     };
   }, [isBrandOpen]);
 
@@ -71,22 +80,23 @@ export default function VehicleModal({ isOpen, vehicle, onClose, onSubmit }) {
   }
 
   function handleBrandSelect(brand) {
-    handleChange('brand', brand);
+    handleChange("brand", brand);
     setIsBrandOpen(false);
   }
 
   function validate() {
     const nextErrors = {};
-    if (!form.licensePlate.trim()) nextErrors.licensePlate = 'กรุณากรอกหมายเลขทะเบียน';
-    if (!form.brand.trim()) nextErrors.brand = 'กรุณาเลือกยี่ห้อรถยนต์';
-    if (!form.model.trim()) nextErrors.model = 'กรุณากรอกรุ่นรถ';
+    if (!form.licensePlate.trim())
+      nextErrors.licensePlate = "กรุณากรอกหมายเลขทะเบียน";
+    if (!form.brand.trim()) nextErrors.brand = "กรุณาเลือกยี่ห้อรถยนต์";
+    if (!form.model.trim()) nextErrors.model = "กรุณากรอกรุ่นรถ";
     setErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;
   }
 
   async function handleSubmit(e) {
     e.preventDefault();
-    setSubmitError('');
+    setSubmitError("");
 
     if (!validate()) return;
 
@@ -97,7 +107,9 @@ export default function VehicleModal({ isOpen, vehicle, onClose, onSubmit }) {
       if (err.fieldErrors) {
         setErrors(err.fieldErrors);
       } else {
-        setSubmitError(err.message || 'บันทึกข้อมูลไม่สำเร็จ กรุณาลองใหม่อีกครั้ง');
+        setSubmitError(
+          err.message || "บันทึกข้อมูลไม่สำเร็จ กรุณาลองใหม่อีกครั้ง",
+        );
       }
     } finally {
       setIsSubmitting(false);
@@ -115,16 +127,23 @@ export default function VehicleModal({ isOpen, vehicle, onClose, onSubmit }) {
       >
         <div className="modal__header">
           <h2 id="vehicle-modal-title" className="modal__title">
-            {isEditMode ? 'แก้ไขข้อมูลรถยนต์' : 'เพิ่มรถยนต์ใหม่'}
+            {isEditMode ? "แก้ไขข้อมูลรถยนต์" : "เพิ่มรถยนต์ใหม่"}
           </h2>
-          <button type="button" className="modal__close" onClick={onClose} aria-label="ปิด">
+          <button
+            type="button"
+            className="modal__close"
+            onClick={onClose}
+            aria-label="ปิด"
+          >
             ×
           </button>
         </div>
 
         <form onSubmit={handleSubmit} noValidate>
           <div className="modal__body">
-            {submitError && <div className="modal__submit-error">{submitError}</div>}
+            {submitError && (
+              <div className="modal__submit-error">{submitError}</div>
+            )}
 
             <div className="form-field">
               <label htmlFor="licensePlate">
@@ -134,39 +153,47 @@ export default function VehicleModal({ isOpen, vehicle, onClose, onSubmit }) {
                 id="licensePlate"
                 type="text"
                 value={form.licensePlate}
-                onChange={(e) => handleChange('licensePlate', e.target.value)}
+                onChange={(e) => handleChange("licensePlate", e.target.value)}
                 placeholder="เช่น 1กก 1234"
-                className={errors.licensePlate ? 'has-error' : ''}
+                className={errors.licensePlate ? "has-error" : ""}
                 autoFocus
               />
-              {errors.licensePlate && <p className="form-field__error">{errors.licensePlate}</p>}
+              {errors.licensePlate && (
+                <p className="form-field__error">{errors.licensePlate}</p>
+              )}
             </div>
 
             <div className="form-field">
-              <label htmlFor="brand">ยี่ห้อรถยนต์ <span className="form-field__required">*</span></label>
+              <label htmlFor="brand">
+                ยี่ห้อรถยนต์ <span className="form-field__required">*</span>
+              </label>
               <div className="brand-select" ref={brandDropdownRef}>
                 <button
                   id="brand"
                   type="button"
                   className={[
-                    'brand-select__trigger',
-                    !form.brand ? 'is-placeholder' : '',
-                    isBrandOpen ? 'is-open' : '',
-                    errors.brand ? 'has-error' : '',
+                    "brand-select__trigger",
+                    !form.brand ? "is-placeholder" : "",
+                    isBrandOpen ? "is-open" : "",
+                    errors.brand ? "has-error" : "",
                   ]
                     .filter(Boolean)
-                    .join(' ')}
+                    .join(" ")}
                   aria-haspopup="listbox"
                   aria-expanded={isBrandOpen}
                   aria-controls="brand-options"
                   onClick={() => setIsBrandOpen((prev) => !prev)}
                 >
-                  <span>{form.brand || 'เลือกยี่ห้อ'}</span>
+                  <span>{form.brand || "เลือกยี่ห้อ"}</span>
                   <span className="brand-select__chevron" aria-hidden="true" />
                 </button>
 
                 {isBrandOpen && (
-                  <div id="brand-options" className="brand-select__menu" role="listbox">
+                  <div
+                    id="brand-options"
+                    className="brand-select__menu"
+                    role="listbox"
+                  >
                     {COMMON_BRANDS.map((brand) => {
                       const isSelected = form.brand === brand;
 
@@ -174,14 +201,17 @@ export default function VehicleModal({ isOpen, vehicle, onClose, onSubmit }) {
                         <button
                           key={brand}
                           type="button"
-                          className={`brand-select__option${isSelected ? ' is-selected' : ''}`}
+                          className={`brand-select__option${isSelected ? " is-selected" : ""}`}
                           role="option"
                           aria-selected={isSelected}
                           onClick={() => handleBrandSelect(brand)}
                         >
                           <span>{brand}</span>
                           {isSelected && (
-                            <span className="brand-select__check" aria-hidden="true">
+                            <span
+                              className="brand-select__check"
+                              aria-hidden="true"
+                            >
                               ✓
                             </span>
                           )}
@@ -191,7 +221,9 @@ export default function VehicleModal({ isOpen, vehicle, onClose, onSubmit }) {
                   </div>
                 )}
               </div>
-              {errors.brand && <p className="form-field__error">{errors.brand}</p>}
+              {errors.brand && (
+                <p className="form-field__error">{errors.brand}</p>
+              )}
             </div>
 
             <div className="form-field">
@@ -202,11 +234,13 @@ export default function VehicleModal({ isOpen, vehicle, onClose, onSubmit }) {
                 id="model"
                 type="text"
                 value={form.model}
-                onChange={(e) => handleChange('model', e.target.value)}
+                onChange={(e) => handleChange("model", e.target.value)}
                 placeholder="ระบุรุ่นรถ"
-                className={errors.model ? 'has-error' : ''}
+                className={errors.model ? "has-error" : ""}
               />
-              {errors.model && <p className="form-field__error">{errors.model}</p>}
+              {errors.model && (
+                <p className="form-field__error">{errors.model}</p>
+              )}
             </div>
 
             <div className="form-field">
@@ -215,19 +249,30 @@ export default function VehicleModal({ isOpen, vehicle, onClose, onSubmit }) {
                 id="note"
                 rows={3}
                 value={form.note}
-                onChange={(e) => handleChange('note', e.target.value)}
+                onChange={(e) => handleChange("note", e.target.value)}
                 placeholder="รายละเอียดเพิ่มเติม (ถ้ามี)"
               />
-              {errors.note && <p className="form-field__error">{errors.note}</p>}
+              {errors.note && (
+                <p className="form-field__error">{errors.note}</p>
+              )}
             </div>
           </div>
 
           <div className="modal__footer">
-            <button type="button" className="btn btn--secondary" onClick={onClose} disabled={isSubmitting}>
+            <button
+              type="button"
+              className="btn btn--secondary"
+              onClick={onClose}
+              disabled={isSubmitting}
+            >
               ยกเลิก
             </button>
-            <button type="submit" className="btn btn--primary" disabled={isSubmitting}>
-              {isSubmitting ? 'กำลังบันทึก...' : 'บันทึก'}
+            <button
+              type="submit"
+              className="btn btn--primary"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "กำลังบันทึก..." : "บันทึก"}
             </button>
           </div>
         </form>

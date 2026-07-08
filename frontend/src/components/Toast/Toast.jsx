@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import './Toast.css';
 
-const ICONS = { success: '✓', error: '✕' };
+const ICONS = { success: '✓', danger: '✓', error: '×' };
 
 export default function Toast({ toast, onDismiss }) {
   useEffect(() => {
@@ -19,7 +19,7 @@ export default function Toast({ toast, onDismiss }) {
       </span>
       <span className="toast__message">{toast.message}</span>
       <button type="button" className="toast__close" onClick={onDismiss} aria-label="ปิดการแจ้งเตือน">
-        ✕
+        ×
       </button>
     </div>
   );
