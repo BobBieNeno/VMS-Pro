@@ -1,0 +1,173 @@
+import { useEffect, useState } from 'react';
+import './VehicleModal.css';
+
+const COMMON_BRANDS = ['Toyota', 'Honda', 'Isuzu', 'Nissan', 'Mazda', 'Mitsubishi', 'Ford', 'อื่นๆ'];
+
+const EMPTY_FORM = { licensePlate: '', brand: '', model: '', note: '' };
+
+/**
+ * Shared Add / Edit modal. `vehicle` prop being null means "add mode";
+ * otherwise the form is pre-filled for editing.
+ */
+export default function VehicleModal({ isOpen, vehicle, onClose, onSubmit }) {
+  const [form, setForm] = useState(EMPTY_FORM);
+  const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+
+  const isEditMode = Boolean(vehicle);
+
+  useEffect(() => {
+    if (isOpen) {
+      setForm(
+        vehicle
+          ? {
+              licensePlate: vehicle.licensePlate,
+              brand: vehicle.brand,
+              model: vehicle.model,
+              note: vehicle.note || '',
+            }
+          : EMPTY_FORM
+      );
+      setErrors({});
+      setSubmitError('');
+    }
+  }, [isOpen, vehicle]);
+
+  if (!isOpen) return null;
+
+  function handleChange(field, value) {
+    setForm((prev) => ({ ...prev, [field]: value }));
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: undefined }));
+    }
+  }
+
+  function validate() {
+    const nextErrors = {};
+    if (!form.licensePlate.trim()) nextErrors.licensePlate = 'กรุณากรอกหมายเลขทะเบียน';
+    if (!form.brand.trim()) nextErrors.brand = 'กรุณาเลือกยี่ห้อรถยนต์';
+    if (!form.model.trim()) nextErrors.model = 'กรุณากรอกรุ่นรถ';
+    setErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setSubmitError('');
+
+    if (!validate()) return;
+
+    setIsSubmitting(true);
+    try {
+      await onSubmit(form);
+    } catch (err) {
+      if (err.fieldErrors) {
+        setErrors(err.fieldErrors);
+      } else {
+        setSubmitError(err.message || 'บันทึกข้อมูลไม่สำเร็จ กรุณาลองใหม่อีกครั้ง');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  return (
+    <div className="modal-overlay" role="presentation" onClick={onClose}>
+      <div
+        className="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="vehicle-modal-title"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="modal__header">
+          <h2 id="vehicle-modal-title" className="modal__title">
+            {isEditMode ? 'แก้ไขข้อมูลรถยนต์' : 'เพิ่มรถยนต์ใหม่'}
+          </h2>
+          <button type="button" className="modal__close" onClick={onClose} aria-label="ปิด">
+            ✕
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} noValidate>
+          <div className="modal__body">
+            {submitError && <div className="modal__submit-error">{submitError}</div>}
+
+            <div className="form-field">
+              <label htmlFor="licensePlate">
+                หมายเลขทะเบียนรถ <span className="form-field__required">*</span>
+              </label>
+              <input
+                id="licensePlate"
+                type="text"
+                value={form.licensePlate}
+                onChange={(e) => handleChange('licensePlate', e.target.value)}
+                placeholder="เช่น 1กก 1234"
+                className={errors.licensePlate ? 'has-error' : ''}
+                autoFocus
+              />
+              {errors.licensePlate && <p className="form-field__error">{errors.licensePlate}</p>}
+            </div>
+
+            <div className="form-field">
+              <label htmlFor="brand">
+                ยี่ห้อรถยนต์ <span className="form-field__required">*</span>
+              </label>
+              <select
+                id="brand"
+                value={form.brand}
+                onChange={(e) => handleChange('brand', e.target.value)}
+                className={errors.brand ? 'has-error' : ''}
+              >
+                <option value="">เลือกยี่ห้อ</option>
+                {COMMON_BRANDS.map((brand) => (
+                  <option key={brand} value={brand}>
+                    {brand}
+                  </option>
+                ))}
+              </select>
+              {errors.brand && <p className="form-field__error">{errors.brand}</p>}
+            </div>
+
+            <div className="form-field">
+              <label htmlFor="model">
+                รุ่นรถ <span className="form-field__required">*</span>
+              </label>
+              <input
+                id="model"
+                type="text"
+                value={form.model}
+                onChange={(e) => handleChange('model', e.target.value)}
+                placeholder="ระบุรุ่นรถ"
+                className={errors.model ? 'has-error' : ''}
+              />
+              {errors.model && <p className="form-field__error">{errors.model}</p>}
+            </div>
+
+            <div className="form-field">
+              <label htmlFor="note">หมายเหตุ</label>
+              <textarea
+                id="note"
+                rows={3}
+                value={form.note}
+                onChange={(e) => handleChange('note', e.target.value)}
+                placeholder="รายละเอียดเพิ่มเติม (ถ้ามี)"
+              />
+              {errors.note && <p className="form-field__error">{errors.note}</p>}
+            </div>
+          </div>
+
+          <div className="modal__footer">
+            <button type="button" className="btn btn--secondary" onClick={onClose} disabled={isSubmitting}>
+              ยกเลิก
+            </button>
+            <button type="submit" className="btn btn--primary" disabled={isSubmitting}>
+              {isSubmitting ? 'กำลังบันทึก...' : 'บันทึก'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
